@@ -394,6 +394,14 @@ static llvm::cl::opt<bool> physical_storage_buffers(
     "physical-storage-buffers", llvm::cl::init(false),
     llvm::cl::desc("Use physical storage buffers instead of storage buffers"));
 
+static llvm::cl::opt<bool>
+    printf_support("enable-printf", llvm::cl::desc("Enable support for printf"),
+                   llvm::cl::init(false));
+
+static llvm::cl::opt<uint32_t>
+    printf_buffer_size("printf-buffer-size",
+                       llvm::cl::desc("Size of the printf storage buffer"),
+                       llvm::cl::init(1024 << 10));
 } // namespace
 
 namespace clspv {
@@ -507,6 +515,9 @@ std::set<FeatureMacro> EnabledFeatureMacros() { return enabled_feature_macros; }
 bool DecorateNonUniform() { return decorate_non_uniform; }
 
 bool PhysicalStorageBuffers() { return physical_storage_buffers; }
+
+bool PrintfSupport() { return printf_support; }
+uint32_t PrintfBufferSize() { return printf_buffer_size; }
 
 } // namespace Option
 } // namespace clspv
