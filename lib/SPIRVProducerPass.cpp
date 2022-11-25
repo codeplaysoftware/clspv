@@ -6589,7 +6589,7 @@ SPIRVID SPIRVProducerPassImpl::getReflectionImport() {
       addSPIRVInst<kExtensions>(spv::OpExtension, "SPV_KHR_non_semantic_info");
     }
     ReflectionID = addSPIRVInst<kImports>(spv::OpExtInstImport,
-                                          "NonSemantic.ClspvReflection.4");
+                                          "NonSemantic.ClspvReflection.5");
   }
   return ReflectionID;
 }
@@ -6647,6 +6647,9 @@ void SPIRVProducerPassImpl::GeneratePushConstantReflection() {
       case PushConstant::RegionGroupOffset:
         pc_inst = reflection::ExtInstPushConstantRegionGroupOffset;
         break;
+      case PushConstant::PrintfBufferPointer:
+        pc_inst = reflection::ExtInstPrintfBufferPointerPushConstant;
+        break;
       default:
         llvm_unreachable("Unhandled push constant");
         break;
@@ -6658,6 +6661,10 @@ void SPIRVProducerPassImpl::GeneratePushConstantReflection() {
       Ops << getSPIRVType(Type::getVoidTy(module->getContext())) << import_id
           << pc_inst << getSPIRVInt32Constant(offset)
           << getSPIRVInt32Constant(size);
+
+      if (pc == PushConstant::PrintfBufferPointer) {
+        Ops << getSPIRVInt32Constant(clspv::Option::PrintfBufferSize());
+      }
       addSPIRVInst(spv::OpExtInst, Ops);
     }
   }
@@ -6759,14 +6766,33 @@ void SPIRVProducerPassImpl::GenerateKernelReflection() {
     auto kernel_name =
         addSPIRVInst<kDebug>(spv::OpString, F.getName().str().c_str());
 
+    uint32_t kernel_flags = reflection::ExtKernelPropertyFlags::None;
+    if (F.hasMetadata(clspv::PrintfKernelMetadataName())) {
+      kernel_flags |= reflection::ExtKernelPropertyFlags::MayUsePrintf;
+    }
+    auto kernel_flags_const = getSPIRVInt32Constant(kernel_flags);
+
     // Kernel declaration
     // Ops[0] = void type
     // Ops[1] = reflection ext import
     // Ops[2] = function id
     // Ops[3] = kernel name
+    // Ops[4] = number of arguments (optional)
+    // Ops[5] = kernel property flags (optional)
+    // Ops[6] = kernel attribute string (optional)
     SPIRVOperandVec Ops;
     Ops << void_id << import_id << reflection::ExtInstKernel << ValueMap[&F]
         << kernel_name;
+
+    if (kernel_flags != reflection::ExtKernelPropertyFlags::None) {
+      // TODO: These operands aren't implemented or used yet but are added to
+      // get the correct number of operands for the updated ClspvReflection
+      // instruction set
+      auto num_arguments = getSPIRVInt32Constant(0);
+      auto kernel_attributes = addSPIRVInst<kDebug>(spv::OpString, "");
+
+      Ops << num_arguments << kernel_flags_const << kernel_attributes;
+    }
     auto kernel_decl = addSPIRVInst<kReflection>(spv::OpExtInst, Ops);
 
     // Generate the required workgroup size property if it was specified.

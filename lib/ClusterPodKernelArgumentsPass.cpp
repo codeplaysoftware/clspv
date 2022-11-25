@@ -88,7 +88,7 @@ clspv::ClusterPodKernelArgumentsPass::run(Module &M, ModuleAnalysisManager &) {
   const auto &DL = M.getDataLayout();
   const uint64_t global_push_constant_size =
       DL.getTypeStoreSize(global_push_constant_ty).getKnownMinSize();
-  assert(global_push_constant_size % 16 == 0 &&
+  assert(global_push_constant_size % 8 == 0 &&
          "Global push constants size changed");
 #endif
   auto mangled_struct_ty = GetTypeMangledPodArgsStruct(M);

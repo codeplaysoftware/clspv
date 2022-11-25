@@ -12,7 +12,7 @@ kernel void test() {
     printf("Hello, %s!", "world");
 }
 
-// CHECK: %[[ReflectionImport:[0-9a-zA-Z_]+]] = OpExtInstImport "NonSemantic.ClspvReflection.4"
+// CHECK: %[[ReflectionImport:[0-9a-zA-Z_]+]] = OpExtInstImport "NonSemantic.ClspvReflection.5"
 
 // CHECK-DAG: %[[uint:[0-9a-zA-Z_]+]] = OpTypeInt 32
 // CHECK-DAG: %[[zero:[0-9a-zA-Z_]+]] = OpConstant %[[uint]] 0
@@ -25,6 +25,6 @@ kernel void test() {
 // CHECK: OpStore %{{[0-9a-zA-Z_]+}} %[[zero]]
 // CHECK: OpStore %{{[0-9a-zA-Z_]+}} %[[one]]
 
-// CHECK: OpExtInst %void %[[ReflectionImport]] PrintfBufferInfo
+// CHECK: OpExtInst %void %[[ReflectionImport]] PrintfBufferStorageBuffer
 // CHECK: OpExtInst %void %[[ReflectionImport]] PrintfInfo %[[zero]] %[[string0]] %[[four]]
 // CHECK: OpExtInst %void %[[ReflectionImport]] PrintfInfo %[[one]] %[[string1]]
