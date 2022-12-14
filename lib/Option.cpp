@@ -402,6 +402,13 @@ static llvm::cl::opt<uint32_t>
     printf_buffer_size("printf-buffer-size",
                        llvm::cl::desc("Size of the printf storage buffer"),
                        llvm::cl::init(1024 << 10));
+
+static llvm::cl::opt<bool> hack_logical_ptrtoint(
+    "hack-logical-ptrtoint", llvm::cl::init(false),
+    llvm::cl::desc(
+        "Allow ptrtoint on logical address spaces when it can be "
+        "guaranteed that they won't be converted back to pointers."));
+
 } // namespace
 
 namespace clspv {
@@ -422,6 +429,7 @@ bool HackPhis() { return hack_phis; }
 bool HackBlockOrder() { return hack_block_order; }
 bool HackClampWidth() { return hack_clamp_width; }
 bool HackMulExtended() { return hack_mul_extended; }
+bool HackLogicalPtrtoint() { return hack_logical_ptrtoint; }
 bool ModuleConstantsInStorageBuffer() {
   return module_constants_in_storage_buffer;
 }

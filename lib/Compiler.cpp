@@ -541,6 +541,18 @@ int RunPassPipeline(llvm::Module &M, llvm::raw_svector_ostream *binaryStream) {
     pm.addPass(clspv::FixupBuiltinsPass());
     pm.addPass(clspv::ThreeElementVectorLoweringPass());
 
+    if (clspv::Option::HackLogicalPtrtoint()) {
+      pm.addPass(llvm::createModuleToFunctionPassAdaptor(llvm::PromotePass()));
+      pm.addPass(clspv::LogicalPointerToIntPass());
+    }
+
+    // Lower longer vectors when requested. Note that this pass depends on
+    // ReplaceOpenCLBuiltinPass and expects DeadCodeEliminationPass to be run
+    // afterwards.
+    if (clspv::Option::LongVectorSupport()) {
+      pm.addPass(clspv::LongVectorLoweringPass());
+    }
+
     // We need to run mem2reg and inst combine early because our
     // createInlineFuncWithPointerBitCastArgPass pass cannot handle the
     // pattern
